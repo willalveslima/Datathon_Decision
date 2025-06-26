@@ -340,6 +340,7 @@ app.log.*
 
 #excluir bases de dados
 bases/
+*.Identifier
 
 
 
