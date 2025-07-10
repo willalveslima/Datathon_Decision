@@ -341,6 +341,7 @@ app.log.*
 #excluir bases de dados
 bases/
 *.Identifier
-
+data/raw/*.json
+data/processed/*.csv
 
 
