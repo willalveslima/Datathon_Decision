@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # Serviço da sua API FastAPI
+  api:
+    build:
+      context: ../ # O contexto de build é a raiz do projeto
+      dockerfile: docker/api/Dockerfile # Caminho para o Dockerfile da API
+    ports:
+      - "8000:8000" # Mapeia a porta 8000 do host para a porta 8000 do contêiner
+    networks:
+      - monitoring_network # Conecta a API à rede de monitoramento
+
+  # Serviço do Prometheus
+  prometheus:
+    image: prom/prometheus:latest # Imagem oficial do Prometheus
+    container_name: prometheus # Nome do contêiner para fácil identificação
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml # Mapeia o arquivo de configuração do Prometheus
+      - prometheus_data:/prometheus # Volume para persistir os dados do Prometheus
+    command: --config.file=/etc/prometheus/prometheus.yml --web.enable-remote-write-receiver --web.enable-lifecycle
+    ports:
+      - "9090:9090" # Mapeia a porta 9090 do host para a porta 9090 do contêiner
+    networks:
+      - monitoring_network # Conecta o Prometheus à rede de monitoramento
+    depends_on:
+      - api # Garante que a API inicie antes do Prometheus (para scrape inicial)
+
+  # Serviço do Grafana
+  grafana:
+    image: grafana/grafana:latest # Imagem oficial do Grafana
+    container_name: grafana # Nome do contêiner para fácil identificação
+    volumes:
+      - grafana_data:/var/lib/grafana # Volume para persistir os dados do Grafana (dashboards, fontes de dados, etc.)
+      - ./grafana/grafana.ini:/etc/grafana/grafana.ini # Mapeia o arquivo de configuração principal do Grafana
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources # Mapeia a pasta de provisionamento de fontes de dados
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards # Mapeia a pasta de provisionamento de dashboards
+    environment:
+      # Variáveis de ambiente para o Grafana
+      - GF_SECURITY_ADMIN_USER=admin # Usuário admin padrão
+      - GF_SECURITY_ADMIN_PASSWORD=grafana-api # Senha admin padrão (AGORA É 'grafana-api')
+      - GF_USERS_ALLOW_SIGN_UP=false # Desabilita o registro de novos usuários
+      - GF_SERVER_ROOT_URL=http://localhost:3000 # URL raiz do servidor Grafana
+    ports:
+      - "3000:3000" # Mapeia a porta 3000 do host para a porta 3000 do contêiner
+    networks:
+      - monitoring_network # Conecta o Grafana à rede de monitoramento
+    depends_on:
+      - prometheus # Garante que o Prometheus inicie antes do Grafana
+
+# Redes para comunicação entre os serviços
+networks:
+  monitoring_network:
+    driver: bridge # Cria uma rede bridge para os serviços
+
+# Volumes para persistência de dados
+volumes:
+  prometheus_data: # Volume para dados do Prometheus
+  grafana_data:    # Volume para dados do Grafana

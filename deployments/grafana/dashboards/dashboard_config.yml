@@ -1,0 +1,13 @@
+        # projeto_raiz/grafana_provisioning/dashboards/dashboard_config.yml
+        apiVersion: 1
+
+        providers:
+          - name: 'default' # Nome do provedor de dashboards
+            orgId: 1 # ID da organização (geralmente 1)
+            folder: '' # Opcional: nome da pasta no Grafana onde os dashboards serão colocados
+            type: file
+            disableDeletion: false # Se true, dashboards removidos do disco não são removidos do Grafana
+            editable: true # Se os dashboards podem ser editados na UI
+            options:
+              path: /etc/grafana/provisioning/dashboards # Caminho DENTRO do contêiner do Grafana
+        

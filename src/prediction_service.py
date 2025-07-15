@@ -45,13 +45,14 @@ portuguese_stop_words = [
 ]
 
 # --- 2. Definir Métricas Prometheus ---
-REQUEST_COUNT = Counter('http_requests_total', 'Total HTTP Requests', ['method', 'endpoint'])
-REQUEST_LATENCY = Histogram('http_request_duration_seconds', 'HTTP Request Latency', ['method', 'endpoint'])
+REQUEST_COUNT = Counter('http_requests_total', 'Total HTTP Requests', ['method', 'endpoint', 'status_code'])
+REQUEST_LATENCY = Histogram('http_request_duration_seconds', 'HTTP Request Latency', ['method', 'endpoint', 'status_code']) # Também pode adicionar aqui
 PREDICTION_LATENCY = Histogram('prediction_duration_seconds', 'Prediction Latency')
 PREDICTION_ERRORS_TOTAL = Counter('prediction_errors_total', 'Total Prediction Errors')
 APPLICANTS_PER_PREDICTION = Histogram('applicants_per_prediction_request', 'Number of applicants per prediction request')
 MODEL_VERSION = Gauge('model_version', 'Version of the deployed model')
 SUCCESSFUL_PREDICTIONS_TOTAL = Counter('successful_predictions_total', 'Total Successful Predictions')
+
 
 # Definir a versão do modelo (exemplo, você pode carregar de um arquivo de configuração)
 MODEL_VERSION.set(1.0) # Exemplo: Versão 1.0 do seu modelo
@@ -113,12 +114,13 @@ async def add_process_time_header(request: Request, call_next):
     process_time = time.time() - start_time
     response.headers["X-Process-Time"] = str(process_time)
 
-    # Coletar métricas de requisição
     method = request.method
     endpoint = request.url.path
-    REQUEST_COUNT.labels(method=method, endpoint=endpoint).inc()
-    REQUEST_LATENCY.labels(method=method, endpoint=endpoint).observe(process_time)
-    logger.info(f"Requisição {method} {endpoint} processada em {process_time:.4f} segundos.")
+    status_code = str(response.status_code) # Captura o código de status
+
+    REQUEST_COUNT.labels(method=method, endpoint=endpoint, status_code=status_code).inc()
+    REQUEST_LATENCY.labels(method=method, endpoint=endpoint, status_code=status_code).observe(process_time)
+    logger.info(f"Requisição {method} {endpoint} com status {status_code} processada em {process_time:.4f} segundos.")
     return response
 
 # --- 5. Função de Pré-processamento e Previsão para um Único Par Candidato-Vaga ---

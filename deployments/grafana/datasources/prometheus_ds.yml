@@ -1,0 +1,13 @@
+    # projeto_raiz/grafana_provisioning/datasources/prometheus_ds.yml
+    apiVersion: 1
+
+    datasources:
+      - name: Prometheus # Nome da fonte de dados no Grafana
+        type: prometheus
+        access: proxy # ou direct, dependendo da sua rede
+        url: http://prometheus:9090 # URL do Prometheus (nome do serviço no docker-compose)
+        isDefault: true # Opcional: define como fonte de dados padrão
+        editable: true # Opcional: permite editar a fonte de dados na UI do Grafana
+        jsonData:
+          timeInterval: "15s" # Intervalo de scrape padrão para esta fonte de dados
+    

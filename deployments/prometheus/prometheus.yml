@@ -1,0 +1,32 @@
+# Configurações globais que serão aplicadas a todos os jobs, a menos que sobrescritas.
+global:
+  # Intervalo padrão para coletar métricas (scrape).
+  scrape_interval: 15s
+  # Intervalo de avaliação padrão para regras.
+  evaluation_interval: 15s
+
+# A lista de alvos a serem monitorados.
+scrape_configs:
+  # Job para o próprio Prometheus.
+  - job_name: 'prometheus'
+    # Configurações de scrape estáticas para este job.
+    static_configs:
+      # O alvo é o próprio Prometheus, geralmente na porta 9090.
+      - targets: ['localhost:9090']
+
+  # Job para a sua API FastAPI.
+  - job_name: 'fastapi-api'
+    # Define o caminho de onde as métricas serão coletadas.
+    metrics_path: '/metrics'
+    # Configurações de scrape estáticas para este job.
+    static_configs:
+      # O alvo para a sua API FastAPI no Docker Compose.
+      # O nome do serviço da API no docker-compose.yml (ex: 'api')
+      # mais a porta interna que a API expõe (8000).
+      - targets: ['api:8000']
+
+  # Exemplo de configuração para o Grafana (opcional, se ele expuser métricas)
+  # Se o serviço Grafana no docker-compose.yml se chamar 'grafana', o target seria:
+  # - job_name: 'grafana'
+  #   static_configs:
+  #     - targets: ['grafana:3000'] # Porta padrão do Grafana
