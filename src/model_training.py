@@ -8,14 +8,14 @@ from sklearn.metrics import classification_report, roc_auc_score, precision_reca
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
-import joblib # Importar joblib para salvar e carregar modelos
+import joblib  # Importar joblib para salvar e carregar modelos
 
 # --- Caminhos dos dados pré processados  ---
 processed_data_pasta = '../data/processed/'
-merged_data_processed = processed_data_pasta + 'merged_data_processed.csv' 
+merged_data_processed = processed_data_pasta + 'merged_data_processed.csv'
 
 
-#local de salvamento do modelo
+# local de salvamento do modelo
 pasta_modelo = '../models/'
 logistic_regression_model_pkl = pasta_modelo + 'logistic_regression_model.pkl'
 tfidf_vectorizer_applicant_pkl = pasta_modelo + 'tfidf_vectorizer_applicant.pkl'
@@ -55,12 +55,15 @@ portuguese_stop_words = [
 
 # Inicializa o TfidfVectorizer para as features de texto do candidato e da vaga.
 # max_features limita o número de palavras (features) para evitar alta dimensionalidade.
-tfidf_vectorizer_applicant = TfidfVectorizer(stop_words=portuguese_stop_words, max_features=5000, lowercase=True)
-tfidf_vectorizer_job = TfidfVectorizer(stop_words=portuguese_stop_words, max_features=5000, lowercase=True)
+tfidf_vectorizer_applicant = TfidfVectorizer(
+    stop_words=portuguese_stop_words, max_features=5000, lowercase=True)
+tfidf_vectorizer_job = TfidfVectorizer(
+    stop_words=portuguese_stop_words, max_features=5000, lowercase=True)
 
 
 # Aplica o TF-IDF nas features de texto dos candidatos.
-applicant_tfidf = tfidf_vectorizer_applicant.fit_transform(merged_df['applicant_text_features'])
+applicant_tfidf = tfidf_vectorizer_applicant.fit_transform(
+    merged_df['applicant_text_features'])
 print(f"Shape do TF-IDF para candidatos: {applicant_tfidf.shape}")
 
 # Aplica o TF-IDF nas features de texto das vagas.
@@ -75,7 +78,7 @@ print("\nIniciando One-Hot Encoding para features categóricas...")
 # Esta lista foi atualizada para refletir as colunas que foram mantidas após a remoção.
 categorical_cols = [
     'modalidade_vaga_prospect',
-    'nivel profissional', # Atenção ao espaço no nome da coluna
+    'nivel profissional',  # Atenção ao espaço no nome da coluna
     'nivel_academico',
     'nivel_ingles',
     'nivel_espanhol',
@@ -85,18 +88,22 @@ categorical_cols = [
 ]
 
 # Filtra as colunas que realmente existem no DataFrame mesclado.
-existing_categorical_cols = [col for col in categorical_cols if col in merged_df.columns]
-missing_categorical_cols = [col for col in categorical_cols if col not in merged_df.columns]
+existing_categorical_cols = [
+    col for col in categorical_cols if col in merged_df.columns]
+missing_categorical_cols = [
+    col for col in categorical_cols if col not in merged_df.columns]
 
 if missing_categorical_cols:
-    print(f"Aviso: As seguintes colunas categóricas não foram encontradas no DataFrame mesclado e serão ignoradas: {missing_categorical_cols}")
+    print(
+        f"Aviso: As seguintes colunas categóricas não foram encontradas no DataFrame mesclado e serão ignoradas: {missing_categorical_cols}")
 
 # Converte todos os valores das colunas categóricas existentes para string e preenche NaNs com string vazia.
 for col in existing_categorical_cols:
     merged_df[col] = merged_df[col].astype(str).fillna('')
 
 # Realiza o One-Hot Encoding. `dummy_na=False` evita a criação de uma coluna para valores NaN.
-encoded_features = pd.get_dummies(merged_df[existing_categorical_cols], dummy_na=False)
+encoded_features = pd.get_dummies(
+    merged_df[existing_categorical_cols], dummy_na=False)
 print(f"Shape das features categóricas codificadas: {encoded_features.shape}")
 
 # --- Combining all features ---
@@ -106,7 +113,8 @@ encoded_features_sparse = csr_matrix(encoded_features)
 
 # Empilha horizontalmente todas as features.
 X = hstack([applicant_tfidf, job_tfidf, encoded_features_sparse])
-y = merged_df['contratado'] # Variável alvo (0 para não contratado, 1 para contratado)
+# Variável alvo (0 para não contratado, 1 para contratado)
+y = merged_df['contratado']
 
 print(f"\nShape final da matriz de features (X): {X.shape}")
 print(f"Shape final do vetor de rótulos (y): {y.shape}")
@@ -116,7 +124,8 @@ print(f"Shape final do vetor de rótulos (y): {y.shape}")
 # `test_size=0.2` significa 20% dos dados para teste.
 # `random_state=42` garante reprodutibilidade.
 # `stratify=y` mantém a proporção das classes (contratado/não contratado) em ambos os conjuntos.
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y)
 
 print(f"\nShape de X_train: {X_train.shape}")
 print(f"Shape de X_test: {X_test.shape}")
@@ -130,7 +139,8 @@ print("\nIniciando treinamento do modelo Logistic Regression...")
 # `solver='saga'` é adequado para grandes datasets e matrizes esparsas.
 # `max_iter` aumentado para garantir convergência.
 # `n_jobs=-1` utiliza todos os núcleos da CPU disponíveis.
-log_reg_model = LogisticRegression(solver='saga', max_iter=1000, random_state=42, n_jobs=-1)
+log_reg_model = LogisticRegression(
+    solver='saga', max_iter=1000, random_state=42, n_jobs=-1)
 log_reg_model.fit(X_train, y_train)
 
 print("\nTreinamento do modelo concluído.")
@@ -155,17 +165,18 @@ print(f"\nAUC-ROC: {roc_auc:.4f}")
 # Plotting Precision-Recall Curve
 # Calcula a curva Precision-Recall.
 precision, recall, _ = precision_recall_curve(y_test, y_proba)
-pr_auc = auc(recall, precision) # Calcula a área sob a curva Precision-Recall.
+pr_auc = auc(recall, precision)  # Calcula a área sob a curva Precision-Recall.
 
 # Gera e salva o gráfico da curva Precision-Recall.
 plt.figure(figsize=(8, 6))
-plt.plot(recall, precision, label=f'Precision-Recall curve (AUC = {pr_auc:.2f})')
+plt.plot(recall, precision,
+         label=f'Precision-Recall curve (AUC = {pr_auc:.2f})')
 plt.xlabel('Recall')
 plt.ylabel('Precision')
 plt.title('Curva Precision-Recall')
 plt.legend()
 plt.grid(True)
-plt.savefig(precision_recall_curve_png) # Salva a imagem do gráfico.
+plt.savefig(precision_recall_curve_png)  # Salva a imagem do gráfico.
 print(f"Curva Precision-Recall salva como {precision_recall_curve_png}.")
 
 # --- Save the Trained Model and Preprocessing Objects ---
@@ -182,7 +193,8 @@ try:
     # sejam consistentes entre o treinamento e a inferência.
     # Você pode salvar a lista de colunas categóricas e os valores únicos se necessário para validação.
     joblib.dump(existing_categorical_cols, categorical_cols_pkl)
-    joblib.dump(encoded_features.columns.tolist(), encoded_feature_names_pkl) # Salva os nomes das colunas após o OHE
+    # Salva os nomes das colunas após o OHE
+    joblib.dump(encoded_features.columns.tolist(), encoded_feature_names_pkl)
 
     print("Modelo, vetorizadores TF-IDF e informações de colunas categóricas salvos com sucesso.")
 except Exception as e:

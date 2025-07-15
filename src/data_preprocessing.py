@@ -3,13 +3,13 @@ import json
 
 # --- Caminhos dos arquivos  ---
 raw_data_pasta = '../data/raw/'
-applicants_file = raw_data_pasta + 'applicants.json' 
+applicants_file = raw_data_pasta + 'applicants.json'
 vagas_file = raw_data_pasta + 'vagas.json'
 prospects_file = raw_data_pasta + 'prospects.json'
 
 # --- Caminhos do arquivo resultante  ---
 processed_data_pasta = '../data/processed/'
-merged_data_processed = processed_data_pasta + 'merged_data_processed.csv' 
+merged_data_processed = processed_data_pasta + 'merged_data_processed.csv'
 
 # Carregar os arquivos JSON
 # Tenta carregar os arquivos JSON fornecidos pelo usuário.
@@ -25,10 +25,12 @@ try:
     print("Arquivos JSON carregados com sucesso.")
 
 except FileNotFoundError as e:
-    print(f"Erro ao carregar o arquivo: {e}. Certifique-se de que os arquivos estão no diretório correto.")
+    print(
+        f"Erro ao carregar o arquivo: {e}. Certifique-se de que os arquivos estão no diretório correto.")
     exit()
 except json.JSONDecodeError as e:
-    print(f"Erro ao decodificar JSON: {e}. Verifique a integridade dos arquivos JSON.")
+    print(
+        f"Erro ao decodificar JSON: {e}. Verifique a integridade dos arquivos JSON.")
     exit()
 
 # Normalizar e criar DataFrames
@@ -51,7 +53,8 @@ for code, data in applicants_data.items():
 
     # Concatena as descrições de atividades do histórico profissional em uma única string.
     if 'historico_profissional' in data and isinstance(data['historico_profissional'], list):
-        applicant_info['historico_profissional_texto'] = " ".join([exp.get('descricao_atividades', '') for exp in data['historico_profissional']])
+        applicant_info['historico_profissional_texto'] = " ".join(
+            [exp.get('descricao_atividades', '') for exp in data['historico_profissional']])
     else:
         applicant_info['historico_profissional_texto'] = ''
 
@@ -96,14 +99,16 @@ df_prospects = df_prospects.rename(columns={'codigo': 'codigo_profissional'})
 
 # Mescla df_prospects com df_applicants usando 'codigo_profissional' como chave.
 # 'how='left'' garante que todas as linhas de df_prospects sejam mantidas.
-merged_df = pd.merge(df_prospects, df_applicants, on='codigo_profissional', how='left', suffixes=('_prospect', '_applicant'))
+merged_df = pd.merge(df_prospects, df_applicants, on='codigo_profissional',
+                     how='left', suffixes=('_prospect', '_applicant'))
 
 # Converte a coluna 'codigo_vaga' para string em ambos os DataFrames antes da mesclagem para evitar problemas de tipo.
 merged_df['codigo_vaga'] = merged_df['codigo_vaga'].astype(str)
 df_vagas['codigo_vaga'] = df_vagas['codigo_vaga'].astype(str)
 
 # Mescla o DataFrame resultante com df_vagas usando 'codigo_vaga' como chave.
-merged_df = pd.merge(merged_df, df_vagas, on='codigo_vaga', how='left', suffixes=('_prospect_job', '_job_details'))
+merged_df = pd.merge(merged_df, df_vagas, on='codigo_vaga',
+                     how='left', suffixes=('_prospect_job', '_job_details'))
 
 print("Merge dos DataFrames concluído.")
 
@@ -111,14 +116,17 @@ print("Merge dos DataFrames concluído.")
 # Define a variável alvo 'contratado'.
 # Um candidato é considerado 'contratado' se a 'situacao_candidado' for "Contratado pela Decision" ou "Contratado como Hunting".
 hired_statuses = ["Contratado pela Decision", "Contratado como Hunting"]
-merged_df['contratado'] = merged_df['situacao_candidado'].isin(hired_statuses).astype(int)
+merged_df['contratado'] = merged_df['situacao_candidado'].isin(
+    hired_statuses).astype(int)
 
 print("\nVariável alvo 'contratado' criada e corrigida.")
 
 # --- Handling Missing Values for Text Columns ---
 # Preenche valores NaN em colunas de texto relevantes com strings vazias para evitar erros no TF-IDF.
-text_cols_applicants = ['objetivo_profissional', 'cv_completo', 'historico_profissional_texto']
-text_cols_vagas = ['titulo_vaga', 'principais_atividades', 'competencia_tecnicas_e_comportamentais', 'demais_observacoes', 'areas_atuacao']
+text_cols_applicants = ['objetivo_profissional',
+                        'cv_completo', 'historico_profissional_texto']
+text_cols_vagas = ['titulo_vaga', 'principais_atividades',
+                   'competencia_tecnicas_e_comportamentais', 'demais_observacoes', 'areas_atuacao']
 
 for col in text_cols_applicants:
     if col in merged_df.columns:
@@ -137,16 +145,16 @@ print("\nValores NaN em colunas de texto preenchidos com string vazia.")
 # --- Feature Engineering: Combine Text Fields for Applicants and Vagas ---
 # Cria uma feature de texto combinada para os candidatos.
 merged_df['applicant_text_features'] = merged_df['objetivo_profissional'] + ' ' + \
-                                       merged_df['historico_profissional_texto'] + ' ' + \
-                                       merged_df['cv_completo']
+    merged_df['historico_profissional_texto'] + ' ' + \
+    merged_df['cv_completo']
 
 # Cria uma feature de texto combinada para as vagas.
 merged_df['job_text_features'] = merged_df['titulo_vaga_prospect'] + ' ' + \
-                                  merged_df['titulo_vaga'] + ' ' + \
-                                  merged_df['principais_atividades'] + ' ' + \
-                                  merged_df['competencia_tecnicas_e_comportamentais'] + ' ' + \
-                                  merged_df['demais_observacoes'] + ' ' + \
-                                  merged_df['areas_atuacao']
+    merged_df['titulo_vaga'] + ' ' + \
+    merged_df['principais_atividades'] + ' ' + \
+    merged_df['competencia_tecnicas_e_comportamentais'] + ' ' + \
+    merged_df['demais_observacoes'] + ' ' + \
+    merged_df['areas_atuacao']
 
 print("\nCampos de texto combinados para candidatos e vagas.")
 
@@ -227,7 +235,8 @@ text_cols_to_keep = [
 ]
 
 # Filtra a lista de colunas a serem removidas, excluindo as que devem ser mantidas.
-final_columns_to_drop = [col for col in columns_to_drop if col not in categorical_cols_to_keep and col not in text_cols_to_keep]
+final_columns_to_drop = [
+    col for col in columns_to_drop if col not in categorical_cols_to_keep and col not in text_cols_to_keep]
 
 
 for col in final_columns_to_drop:
