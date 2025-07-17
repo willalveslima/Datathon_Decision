@@ -2,6 +2,11 @@
 # 'slim-buster' é uma versão mais leve da imagem base.
 FROM python:3.11-slim-buster
 
+# Define o fuso horário para o contêiner.
+# 'America/Sao_Paulo' é um fuso horário comum no Brasil (UTC-3).
+ENV TZ=America/Sao_Paulo
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
 # Define o diretório de trabalho dentro do contêiner.
 # Todos os comandos subsequentes serão executados a partir deste diretório.
 WORKDIR /app
@@ -31,4 +36,4 @@ EXPOSE 8000
 # --host 0.0.0.0 permite que a aplicação seja acessível de fora do contêiner.
 # src.prediction_service:app refere-se ao módulo 'prediction_service' dentro da pasta 'src',
 # e 'app' é a instância do FastAPI dentro desse módulo.
-CMD ["uvicorn", "src.prediction_service:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "src.prediction_service.prediction_service:app", "--host", "0.0.0.0", "--port", "8000"]

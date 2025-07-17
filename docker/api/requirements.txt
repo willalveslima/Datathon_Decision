@@ -7,3 +7,5 @@ pandas==2.3.0
 scikit-learn==1.7.0
 scipy==1.16.0
 prometheus_client==0.22.1
+psycopg2-binary 
+SQLAlchemy==2.0.41

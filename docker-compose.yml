@@ -1,0 +1,104 @@
+version: '3.8'
+
+services:
+  # Serviço da sua API FastAPI
+  api:
+    build:
+      context: . # O contexto de build agora é a raiz do projeto
+      dockerfile: docker/api/Dockerfile # Caminho para o Dockerfile da API
+    ports:
+      - "8000:8000" # Mapeia a porta 8000 do host para a porta 8000 do contêiner
+    networks:
+      - monitoring_network # Conecta a API à rede de monitoramento
+    depends_on:
+      - db # A API depende do banco de dados para iniciar
+    environment: # Adicionado para garantir que os logs da API usem o fuso horário
+      - TZ=America/Sao_Paulo
+
+  # Serviço do Prometheus
+  prometheus:
+    image: prom/prometheus:latest # Imagem oficial do Prometheus
+    container_name: prometheus # Nome do contêiner para fácil identificação
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml # Mapeia o arquivo de configuração do Prometheus
+      - prometheus_data:/prometheus # Volume para persistir os dados do Prometheus
+    command: --config.file=/etc/prometheus/prometheus.yml --web.enable-remote-write-receiver --web.enable-lifecycle
+    ports:
+      - "9090:9090" # Mapeia a porta 9090 do host para a porta 9090 do contêiner
+    networks:
+      - monitoring_network # Conecta o Prometheus à rede de monitoramento
+    depends_on:
+      - api # Garante que a API inicie antes do Prometheus (para scrape inicial)
+      - drift_monitor # Prometheus também depende do serviço de drift para coletar suas métricas
+    environment: # Adicionado para garantir que os logs do Prometheus usem o fuso horário
+      - TZ=America/Sao_Paulo
+
+  # Serviço do Grafana
+  grafana:
+    image: grafana/grafana:latest # Imagem oficial do Grafana
+    container_name: grafana # Nome do contêiner para fácil identificação
+    volumes:
+      - grafana_data:/var/lib/grafana # Volume para persistir os dados do Grafana (dashboards, fontes de dados, etc.)
+      - ./docker/grafana/grafana.ini:/etc/grafana/grafana.ini # Mapeia o arquivo de configuração principal do Grafana
+      - ./docker/grafana/datasources:/etc/grafana/provisioning/datasources # Mapeia a pasta de provisionamento de fontes de dados
+      - ./docker/grafana/dashboards:/etc/grafana/provisioning/dashboards # Mapeia a pasta de provisionamento de dashboards
+    environment:
+      # Variáveis de ambiente para o Grafana
+      - GF_SECURITY_ADMIN_USER=admin # Usuário admin padrão
+      - GF_SECURITY_ADMIN_PASSWORD=grafana-api # Senha admin padrão (MUDE ISSO EM PRODUÇÃO!)
+      - GF_USERS_ALLOW_SIGN_UP=false # Desabilita o registro de novos usuários
+      - GF_SERVER_ROOT_URL=http://localhost:3000 # URL raiz do servidor Grafana
+      - TZ=America/Sao_Paulo # Adicionado para garantir que os logs do Grafana usem o fuso horário
+    ports:
+      - "3000:3000" # Mapeia a porta 3000 do host para a porta 3000 do contêiner
+    networks:
+      - monitoring_network # Conecta o Grafana à rede de monitoramento
+    depends_on:
+      - prometheus # Garante que o Prometheus inicie antes do Grafana
+
+  # Serviço do Banco de Dados PostgreSQL
+  db:
+    image: postgres:13 # Imagem oficial do PostgreSQL (versão 13)
+    container_name: postgres_db # Nome do contêiner para fácil identificação
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      TZ: America/Sao_Paulo # Adicionado para garantir que os logs do DB usem o fuso horário
+    volumes:
+      - db_data:/var/lib/postgresql/data # Volume para persistir os dados do banco de dados
+    ports:
+      - "5432:5432" # Opcional: mapear a porta para acessar o DB do host (útil para ferramentas de DB)
+    networks:
+      - monitoring_network # Conecta o DB à rede de monitoramento
+
+  # Serviço de Feedback e Monitoramento de Drift
+  drift_monitor:
+    build:
+      context: . # O contexto de build agora é a raiz do projeto
+      dockerfile: docker/drift_monitor/Dockerfile # Caminho para o Dockerfile do serviço de drift
+    ports:
+      - "8001:8001" # Mapeia a porta 8001 do host para a porta 8001 do contêiner
+    networks:
+      - monitoring_network # Conecta o serviço de drift à rede de monitoramento
+    environment:
+      # Passa as mesmas variáveis de ambiente do DB para o serviço de drift
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: db # O nome do serviço do DB no Docker Compose
+      DB_PORT: 5432
+      TZ: America/Sao_Paulo # Adicionado para garantir que os logs do serviço de drift usem o fuso horário
+    depends_on:
+      - db # O serviço de drift depende do banco de dados para iniciar
+
+# Redes para comunicação entre os serviços
+networks:
+  monitoring_network:
+    driver: bridge
+
+# Volumes para persistência de dados
+volumes:
+  prometheus_data:
+  grafana_data:
+  db_data:

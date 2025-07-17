@@ -25,8 +25,15 @@ scrape_configs:
       # mais a porta interna que a API expõe (8000).
       - targets: ['api:8000']
 
-  # Exemplo de configuração para o Grafana (opcional, se ele expuser métricas)
-  # Se o serviço Grafana no docker-compose.yml se chamar 'grafana', o target seria:
-  # - job_name: 'grafana'
-  #   static_configs:
-  #     - targets: ['grafana:3000'] # Porta padrão do Grafana
+  # NOVO JOB: Para o serviço de monitoramento de drift
+  - job_name: 'drift-monitor'
+    metrics_path: '/metrics' # O endpoint de métricas do serviço de drift
+    static_configs:
+      # O nome do serviço do drift_monitor no docker-compose.yml (ex: 'drift_monitor')
+      # mais a porta interna que o serviço expõe (8001).
+      - targets: ['drift_monitor:8001']
+
+# Exemplo de configuração para o Grafana (opcional, se ele expuser métricas)
+# - job_name: 'grafana'
+#   static_configs:
+#     - targets: ['grafana:3000']
