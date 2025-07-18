@@ -274,15 +274,15 @@ cython_debug/
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
-.idea/
+#.idea/
 
 ### VisualStudioCode ###
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-!.vscode/*.code-snippets
+#.vscode/*
+#!.vscode/settings.json
+#!.vscode/tasks.json
+#!.vscode/launch.json
+#!.vscode/extensions.json
+#!.vscode/*.code-snippets
 
 # Local History for Visual Studio Code
 .history/
@@ -292,53 +292,48 @@ cython_debug/
 
 ### VisualStudioCode Patch ###
 # Ignore all local history of files
-.history
 .ionide
-
-# Support for Project snippet scope
-.vscode/*.code-snippets
 
 # Ignore code-workspaces
 *.code-workspace
 
 # End of https://www.toptal.com/developers/gitignore/api/python,pycharm,visualstudiocode
 
-#pasta de configuração vscode
-.vscode
+### Configurações personalizadas do projeto ###
+# Pasta de arquivos
+arquivos/
 
-#pasta de arqivos
-arquivos
-
-#pre-commit
+# Pre-commit
 #.pre-commit-config.yaml
 
+# Scripts utilizados
 scripts_usados/
 
+# Jupyter notebooks (opcional)
 #*.ipynb
 
-# banco de dados / cache
+# Banco de dados / cache
 *.sqlite
 *.db
 *http_cache/
-# arquivos de teste
+
+# Arquivos de teste
 print_valores.txt
 
-# logs
+# Logs específicos do projeto
 app.log.*
 
-# arquivos de configuração
+# Arquivos de configuração específicos
 *.env
 
-# arquivos pickle
+# Arquivos pickle (modelos)
 *.pkl
 
-#  modelo
+# Modelos de machine learning
 *.keras
-#  cache do keras
-# scaler
 *.gz
 
-#excluir bases de dados
+# Bases de dados
 bases/
 *.Identifier
 data/raw/*.json
