@@ -259,7 +259,7 @@ def display_final_statistics():
 
 # --- Loop Principal do Teste Funcional ---
 if __name__ == "__main__":
-    test_interval_minutes = 1
+    test_interval_minutes = 0.5
     print(f"Iniciando loop de teste funcional. Repetindo a cada {test_interval_minutes} minutos. Pressione Ctrl+C para interromper.")
     try:
         while True:

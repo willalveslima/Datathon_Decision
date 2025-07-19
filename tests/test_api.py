@@ -93,8 +93,11 @@ def test_client_and_mocks():
                 np.array([[0.2, 0.8]])  # Para o segundo candidato
             ]
 
-            mock_tfidf_applicant_transform = MagicMock(transform=lambda x: np.zeros((x.shape[0], 5000)))
-            mock_tfidf_job_transform = MagicMock(transform=lambda x: np.zeros((x.shape[0], 5000)))
+            mock_tfidf_applicant_transform = MagicMock()
+            mock_tfidf_applicant_transform.transform = lambda x: np.zeros((len(x), 5000))
+            
+            mock_tfidf_job_transform = MagicMock()
+            mock_tfidf_job_transform.transform = lambda x: np.zeros((len(x), 5000))
             
             # --- CORREÇÃO: Mocks para loaded_categorical_cols e loaded_encoded_feature_names com base nas colunas ATUAIS ---
             # Estas devem corresponder às colunas categóricas que o modelo espera após o pré-processamento
@@ -133,9 +136,12 @@ def test_client_and_mocks():
                 mock_loaded_common_skills
             ]
 
-            # --- Patch nas variáveis globais 'engine', 'SessionLocal', 'loaded_model', etc. no módulo ---
-            with patch('src.prediction_service.prediction_service.engine', new=mock_engine_instance), \
-                 patch('src.prediction_service.prediction_service.SessionLocal', new=mock_db_session_class), \
+            # Mock da DatabaseConnection
+            mock_db_connection = MagicMock()
+            mock_db_connection.get_session.return_value = mock_db_session_instance
+            
+            # --- Patch nas variáveis globais do módulo ---
+            with patch('src.prediction_service.prediction_service.db_connection', new=mock_db_connection), \
                  patch('src.prediction_service.prediction_service.loaded_model', new=mock_model), \
                  patch('src.prediction_service.prediction_service.loaded_tfidf_applicant', new=mock_tfidf_applicant_transform), \
                  patch('src.prediction_service.prediction_service.loaded_tfidf_job', new=mock_tfidf_job_transform), \
