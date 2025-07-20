@@ -1,5 +1,4 @@
-# Use a mesma imagem base do Python da sua API para consistência
-FROM python:3.11-slim-buster
+FROM google/cloud-sdk:slim
 
 # Define o fuso horário para o contêiner.
 ENV TZ=America/Sao_Paulo
@@ -12,11 +11,7 @@ WORKDIR /app
 COPY docker/drift_monitor/requirements.txt .
 
 # Instala as dependências Python.
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Instala gsutil (ferramenta para interagir com Google Cloud Storage)
-RUN apt-get update && apt-get install -y google-cloud-cli && \
-    rm -rf /var/lib/apt/lists/*
+RUN pip3 install --no-cache-dir -r requirements.txt
 
 # Cria o diretório para os modelos (se o serviço de drift precisar ler modelos)
 # O serviço de drift precisa ler common_skills.pkl para calcular data drift em habilidades.
