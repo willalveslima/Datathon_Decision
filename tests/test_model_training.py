@@ -404,7 +404,7 @@ class TestModelTraining:
         
         assert isinstance(result, pd.DataFrame)
         assert result.equals(mock_df)
-        mock_read_csv.assert_called_once_with("../../data/processed/merged_data_processed.csv")
+        mock_read_csv.assert_called_once_with("data/processed/merged_data_processed.csv")
 
     def test_print_recommendation_guide(self, capsys):
         """Testa a função que imprime o exemplo de uso."""

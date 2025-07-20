@@ -16,7 +16,7 @@ from sklearn.model_selection import train_test_split
 MODEL_VERSION = "1.0"  # Versão do modelo, pode ser alterada conforme necessário
 
 
-def load_processed_data(data_path="../../data/processed/merged_data_processed.csv"):
+def load_processed_data(data_path="data/processed/merged_data_processed.csv"):
     """
     Carrega o DataFrame processado que foi salvo na etapa anterior.
 
@@ -550,7 +550,9 @@ def evaluate_model(model, x_test, y_test, threshold=0.7):
     return y_pred, y_proba, roc_auc, pr_auc, precision, recall
 
 
-def plot_precision_recall_curve(precision, recall, pr_auc, save_path="precision_recall_curve.png"):
+def plot_precision_recall_curve(
+    precision, recall, pr_auc, save_path="src/training/precision_recall_curve.png"
+):
     """
     Gera e salva o gráfico da curva Precision-Recall.
 

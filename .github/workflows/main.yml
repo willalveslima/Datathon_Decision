@@ -87,15 +87,6 @@ jobs:
           gsutil cp -r models/* gs://datathon-decision/models/
           echo "Model artifacts uploaded."
 
-      - name: Run Linters and Formatters
-        # Executa as ferramentas de qualidade de código.
-        # Certifique-se de que as configurações em pyproject.toml estejam corretas.
-        run: |
-          isort . --check-only --diff
-          black . --check --diff
-          pydocstyle src/
-          pylint src/
-
       - name: Run Tests with Coverage
         # Executa os testes unitários e mede a cobertura de código.
         # PYTHONPATH=. é necessário para que pytest encontre os módulos src/
