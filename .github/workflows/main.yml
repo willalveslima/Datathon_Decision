@@ -72,7 +72,7 @@ jobs:
         # Executa o script de pré-processamento para gerar o merged_data_processed.csv
         # e garantir que os dados estejam prontos para o treinamento.
         run: |
-          python src/training/data_preprocessing_merge.py
+          python src/training/data_preprocessing_merge_code.py
 
       - name: Run Model Training
         # Executa o script de treinamento para gerar os artefatos do modelo (.pkl, .keras, .txt)
