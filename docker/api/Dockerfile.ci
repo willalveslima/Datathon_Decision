@@ -22,7 +22,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # A imagem python:slim-buster não vem com gsutil/gcloud CLI por padrão.
 # Isso adiciona um pouco de tamanho à imagem, mas é necessário para o download.
 
-RUN apt-get install -y google-cloud-sdk
+RUN apt-get install -y google-cloud-cli
 
 RUN rm -rf /var/lib/apt/lists/*
 
