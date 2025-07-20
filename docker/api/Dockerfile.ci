@@ -4,13 +4,6 @@ FROM google/cloud-sdk:slim
 ENV TZ=America/Sao_Paulo
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-RUN apt-get update && \
-    apt-get install -y python3.11 python3.11-distutils python3-pip && \
-    pip3 install --upgrade pip
-
-# Configure o gcloud CLI (opcional, mas recomendado)
-RUN gcloud config set core/disable_usage_reporting true
-
 # Define o diretório de trabalho dentro do contêiner.
 WORKDIR /app
 
