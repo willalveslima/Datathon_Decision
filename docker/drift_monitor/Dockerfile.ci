@@ -11,7 +11,7 @@ WORKDIR /app
 COPY docker/drift_monitor/requirements.txt .
 
 # Instala as dependências Python.
-RUN pip3 install --no-cache-dir -r requirements.txt
+RUN pip3 install --break-system-packages --no-cache-dir -r requirements.txt
 
 # Cria o diretório para os modelos (se o serviço de drift precisar ler modelos)
 # O serviço de drift precisa ler common_skills.pkl para calcular data drift em habilidades.
