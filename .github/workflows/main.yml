@@ -93,30 +93,28 @@ jobs:
         run: |
           PYTHONPATH=. pytest --cov=src --cov-fail-under=80
 
-    #- name: Build Docker Images
-    #  # Constrói as imagens Docker para a API e o serviço de drift.
-    #  # A pasta 'models/' agora existe e contém os artefatos gerados na etapa de treinamento.
-    #  # NOTA: Os Dockerfiles precisarão ser atualizados para BAIXAR os modelos do GCS,
-    #  # em vez de copiá-los da pasta local 'models/'.
-    #  run: |
-    #    echo "Building API Docker image..."
-    #    docker build -t recommendation-api:$(git rev-parse --short HEAD) -f docker/api/Dockerfile .
-    #    echo "Building Drift Monitor Docker image..."
-    #    docker build -t drift-monitor:$(git rev-parse --short HEAD) -f docker/drift_monitor/Dockerfile .
-
-    # - name: Push Docker Images to Artifact Registry (Opcional - para CD)
-    #   # Esta etapa seria para enviar as imagens para o Artifact Registry da GCP.
-    #   # Requer configuração de permissões no Service Account e login no Docker.
-    #   # uses: 'google-github-actions/setup-gcloud@v2' # Se não usar o 'auth@v2' para login docker
-    #   # with:
-    #   #   project_id: your-gcp-project-id
-    #   #   service_account_key: ${{ secrets.GCP_SA_KEY }}
-    #   #   export_default_credentials: true
-    #   # run: |
-    #   #   gcloud auth configure-docker # Autentica Docker com Artifact Registry
-    #   #   docker tag recommendation-api:$(git rev-parse --short HEAD) gcr.io/your-gcp-project-id/recommendation-api:$(git rev-parse --short HEAD)
-    #   #   docker push gcr.io/your-gcp-project-id/recommendation-api:$(git rev-parse --short HEAD)
-
+      - name: Build Docker Images
+        # Constrói as imagens Docker para a API e o serviço de drift.
+        # A pasta 'models/' agora existe e contém os artefatos gerados na etapa de treinamento.
+        # NOTA: Os Dockerfiles precisarão ser atualizados para BAIXAR os modelos do GCS,
+        # em vez de copiá-los da pasta local 'models/'.
+        run: |
+          echo "Building API Docker image..."
+          docker build -t recommendation-api:$(git rev-parse --short HEAD) -f docker/api/Dockerfile.ci .
+          echo "Building Drift Monitor Docker image..."
+          docker build -t drift-monitor:$(git rev-parse --short HEAD) -f docker/drift_monitor/Dockerfile.ci .  
+    #- name: Push Docker Images to Artifact Registry (Opcional - para CD)
+    # Esta etapa seria para enviar as imagens para o Artifact Registry da GCP.
+    # Requer configuração de permissões no Service Account e login no Docker.
+    # uses: 'google-github-actions/setup-gcloud@v2' # Se não usar o 'auth@v2' para login docker
+    # with:
+    #   project_id: your-gcp-project-id
+    #   service_account_key: ${{ secrets.GCP_SA_KEY }}
+    #   export_default_credentials: true
+    # run: |
+    #   gcloud auth configure-docker # Autentica Docker com Artifact Registry
+    #   docker tag recommendation-api:$(git rev-parse --short HEAD) gcr.io/your-gcp-project-id/recommendation-api:$(git rev-parse --short HEAD)
+    #   docker push gcr.io/your-gcp-project-id/recommendation-api:$(git rev-parse --short HEAD)  
     # - name: Deploy to Cloud Run (Opcional - para CD)
     #   # Esta etapa seria para implantar os serviços no Cloud Run.
     #   # Requer permissões no Service Account para Cloud Run Admin.
