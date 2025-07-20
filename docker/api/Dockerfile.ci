@@ -30,10 +30,5 @@ COPY src/ ./src/
 # Expõe a porta em que a aplicação FastAPI será executada.
 EXPOSE 8000
 
-# Limpe o ficheiro da chave da conta de serviço para segurança.
-# É crucial remover as credenciais sensíveis da imagem final.
-RUN rm /tmp/gcp-key.json && \
-    rm /tmp/gcp-id.txt
-# Comando para iniciar a aplicação usando Uvicorn.
 
 CMD ["uvicorn", "src.prediction_service.prediction_service:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -24,10 +24,6 @@ COPY src/drift_monitor_service/ ./src/drift_monitor_service/
 # Expõe a porta em que o serviço de drift será executado
 EXPOSE 8001
 
-# Limpe o ficheiro da chave da conta de serviço para segurança.
-# É crucial remover as credenciais sensíveis da imagem final.
-RUN rm /tmp/gcp-key.json && \
-    rm /tmp/gcp-id.txt
 
 # Comando para iniciar o serviço
 CMD ["uvicorn", "src.drift_monitor_service.main:app", "--host", "0.0.0.0", "--port", "8001"]
