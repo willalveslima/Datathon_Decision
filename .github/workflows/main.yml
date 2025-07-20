@@ -1,0 +1,129 @@
+# .github/workflows/main.yml
+
+name: CI/CD Pipeline
+
+# Gatilhos para o pipeline
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - feature/* # Para branches de feature
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest # Ambiente de execução da Action (pode ser ajustado)
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4 # Clona o repositório
+
+    - name: Authenticate to Google Cloud # NOVO PASSO: Autentica com a GCP
+      uses: 'google-github-actions/auth@v2'
+      with:
+        # A chave JSON da sua Service Account da GCP, armazenada como um GitHub Secret
+        # Ex: GCP_SA_KEY
+        credentials_json: ${{ secrets.FIAP_GCP_SA_KEY }}
+
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11' # Garante o uso do Python 3.11
+        cache: 'pip' # Habilita cache para dependências pip
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        # Instala todas as dependências do projeto (incluindo dev/test)
+        pip install -r requirements.txt
+        # Instala ferramentas de cobertura e análise estática que não estejam no requirements.txt principal
+        pip install pytest-cov black isort pydocstyle pylint
+        # Instala gcloud CLI para interagir com o Cloud Storage
+        # Já vem pré-instalado na maioria dos runners do GitHub Actions, mas pode ser instalado explicitamente se necessário.
+        # pip install google-cloud-sdk # Não é necessário se usar 'google-github-actions/setup-gcloud' ou já estiver no runner
+
+    - name: Download Raw Data from GCS # ATUALIZADO: Baixa os dados brutos do Cloud Storage
+      run: |
+        echo "Downloading raw data from GCS bucket: datathon-decision..."
+        mkdir -p data/raw # Garante que a pasta de destino exista
+        # Adapte os nomes dos arquivos se forem diferentes no seu bucket
+        gsutil cp gs://datathon-decision/raw/applicants.json data/raw/applicants.json
+        gsutil cp gs://datathon-decision/raw/vagas.json data/raw/vagas.json
+        gsutil cp gs://datathon-decision/raw/prospects.json data/raw/prospects.json
+        echo "Raw data downloaded."
+
+    - name: Run Data Preprocessing
+      # Executa o script de pré-processamento para gerar o merged_data_processed.csv
+      # e garantir que os dados estejam prontos para o treinamento.
+      run: |
+        python src/training/data_preprocessing_merge.py
+
+    - name: Run Model Training
+      # Executa o script de treinamento para gerar os artefatos do modelo (.pkl, .keras, .txt)
+      # na pasta 'models/'. Isso é crucial, pois 'models/' não está no Git.
+      run: |
+        python src/training/model_training.py
+
+    - name: Upload Model Artifacts to GCS # NOVO PASSO: Faz upload dos artefatos do modelo para o Cloud Storage
+      run: |
+        echo "Uploading model artifacts to GCS bucket: datathon-decision..."
+        # Copia todos os arquivos da pasta 'models/' para o subdiretório 'models/' no bucket
+        gsutil cp -r models/* gs://datathon-decision/models/
+        echo "Model artifacts uploaded."
+
+    - name: Run Linters and Formatters
+      # Executa as ferramentas de qualidade de código.
+      # Certifique-se de que as configurações em pyproject.toml estejam corretas.
+      run: |
+        isort . --check-only --diff
+        black . --check --diff
+        pydocstyle src/
+        pylint src/
+
+    - name: Run Tests with Coverage
+      # Executa os testes unitários e mede a cobertura de código.
+      # PYTHONPATH=. é necessário para que pytest encontre os módulos src/
+      run: |
+        PYTHONPATH=. pytest --cov=src --cov-fail-under=80
+
+    #- name: Build Docker Images
+    #  # Constrói as imagens Docker para a API e o serviço de drift.
+    #  # A pasta 'models/' agora existe e contém os artefatos gerados na etapa de treinamento.
+    #  # NOTA: Os Dockerfiles precisarão ser atualizados para BAIXAR os modelos do GCS,
+    #  # em vez de copiá-los da pasta local 'models/'.
+    #  run: |
+    #    echo "Building API Docker image..."
+    #    docker build -t recommendation-api:$(git rev-parse --short HEAD) -f docker/api/Dockerfile .
+    #    echo "Building Drift Monitor Docker image..."
+    #    docker build -t drift-monitor:$(git rev-parse --short HEAD) -f docker/drift_monitor/Dockerfile .
+
+    # - name: Push Docker Images to Artifact Registry (Opcional - para CD)
+    #   # Esta etapa seria para enviar as imagens para o Artifact Registry da GCP.
+    #   # Requer configuração de permissões no Service Account e login no Docker.
+    #   # uses: 'google-github-actions/setup-gcloud@v2' # Se não usar o 'auth@v2' para login docker
+    #   # with:
+    #   #   project_id: your-gcp-project-id
+    #   #   service_account_key: ${{ secrets.GCP_SA_KEY }}
+    #   #   export_default_credentials: true
+    #   # run: |
+    #   #   gcloud auth configure-docker # Autentica Docker com Artifact Registry
+    #   #   docker tag recommendation-api:$(git rev-parse --short HEAD) gcr.io/your-gcp-project-id/recommendation-api:$(git rev-parse --short HEAD)
+    #   #   docker push gcr.io/your-gcp-project-id/recommendation-api:$(git rev-parse --short HEAD)
+
+    # - name: Deploy to Cloud Run (Opcional - para CD)
+    #   # Esta etapa seria para implantar os serviços no Cloud Run.
+    #   # Requer permissões no Service Account para Cloud Run Admin.
+    #   # uses: 'google-github-actions/deploy-cloudrun@v2'
+    #   # with:
+    #   #   service: recommendation-api-service
+    #   #   image: gcr.io/your-gcp-project-id/recommendation-api:$(git rev-parse --short HEAD)
+    #   #   region: us-east1 # Sua região do Cloud Run
+    #   #   # Adicione variáveis de ambiente do Cloud Run aqui, se necessário
+    #   #   env_vars: |
+    #   #     DB_HOST=your-cloudsql-ip
+    #   #     DB_USER=your-db-user
+    #   #     DB_PASSWORD=your-db-password
