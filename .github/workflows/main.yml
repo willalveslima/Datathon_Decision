@@ -34,12 +34,12 @@ jobs:
 
       - name: Use gcloud
         run: gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
-        
+
       - name: Verify GCP Authentication (DEBUG)
         run: |
           gcloud auth list
           gcloud config list project
-          gsutil ls gs://datathon-decision/raw/
+          gsutil ls gs://datathon-decision/data/raw/
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
