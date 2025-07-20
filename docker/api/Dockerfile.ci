@@ -1,4 +1,4 @@
-FROM google/oud-sdk:slim
+FROM google/cloud-sdk:slim
 
 # Define o fuso horário para o contêiner.
 ENV TZ=America/Sao_Paulo
