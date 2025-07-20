@@ -6,7 +6,6 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 RUN apt-get update && \
     apt-get install -y python3.11 python3.11-distutils python3-pip && \
-    ln -s /usr/bin/python3.11 /usr/bin/python3 && \
     pip3 install --upgrade pip
 
 # Configure o gcloud CLI (opcional, mas recomendado)
