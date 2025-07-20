@@ -16,6 +16,12 @@ COPY docker/api/requirements.txt .
 # Instala as dependências Python.
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Remove existing sources and add archive sources
+RUN echo "deb http://archive.debian.org/debian buster main contrib non-free" > /etc/apt/sources.list && \
+    echo "deb http://archive.debian.org/debian-security buster/updates main contrib non-free" >> /etc/apt/sources.list && \
+    apt-get update && apt-get install -y google-cloud-sdk && \
+    rm -rf /var/lib/apt/lists/*
+
 # Instala gsutil (ferramenta para interagir com Google Cloud Storage)
 # Necessário para baixar os modelos do GCS.
 # A imagem python:slim-buster não vem com gsutil/gcloud CLI por padrão.
