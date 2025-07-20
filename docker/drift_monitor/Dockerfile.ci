@@ -17,6 +17,10 @@ RUN pip3 install --break-system-packages --no-cache-dir -r requirements.txt
 # O serviço de drift precisa ler common_skills.pkl para calcular data drift em habilidades.
 RUN mkdir -p /app/models
 
+COPY gcp-key.json /tmp/gcp-key.json
+RUN gcloud auth activate-service-account --key-file=/tmp/gcp-key.json && \
+    gcloud config set project $(cat /tmp/gcp-id.txt)
+
 # Baixa os arquivos do modelo do Cloud Storage que o serviço de drift precisa.
 # O Service Account usado pelo GitHub Actions precisa ter permissão de leitura no bucket.
 RUN gsutil cp gs://datathon-decision/models/common_skills.pkl /app/models/

@@ -25,6 +25,10 @@ RUN mkdir -p /app/models
 # precisa ter permissão de leitura (Storage Object Viewer) no bucket 'datathon-decision'.
 # ATENÇÃO: Adapte o nome do seu bucket e os nomes dos arquivos se forem diferentes.
 
+COPY gcp-key.json /tmp/gcp-key.json
+RUN gcloud auth activate-service-account --key-file=/tmp/gcp-key.json && \
+    gcloud config set project $(cat /tmp/gcp-id.txt)
+
 
 RUN gsutil cp gs://datathon-decision/models/logistic_regression_model.pkl /app/models/
 RUN gsutil cp gs://datathon-decision/models/tfidf_vectorizer_applicant.pkl /app/models/

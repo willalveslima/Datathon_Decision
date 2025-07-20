@@ -92,6 +92,11 @@ jobs:
         # PYTHONPATH=. é necessário para que pytest encontre os módulos src/
         run: |
           PYTHONPATH=. pytest --cov=src --cov-fail-under=80
+      
+      - name: Adiciona credencial GCP para o build
+        run: |
+          echo "${{ secrets.GCP_SA_KEY }}" > gcp-key.json
+          echo "${{ secrets.GCP_PROJECT_ID }}" > gcp-id.txt
 
       - name: Build Docker Images
         # Constrói as imagens Docker para a API e o serviço de drift.
@@ -99,8 +104,12 @@ jobs:
         # NOTA: Os Dockerfiles precisarão ser atualizados para BAIXAR os modelos do GCS,
         # em vez de copiá-los da pasta local 'models/'.
         run: |
+          cp gcp-key.json docker/api/gcp-key.json
+          cp gcp-id.txt docker/api/gcp-id.txt
           echo "Building API Docker image..."
           docker build -t recommendation-api:$(git rev-parse --short HEAD) -f docker/api/Dockerfile.ci .
+          cp gcp-key.json docker/drift_monitor/gcp-key.json
+          cp gcp-id.txt docker/drift_monitor/gcp-id.txt
           echo "Building Drift Monitor Docker image..."
           docker build -t drift-monitor:$(git rev-parse --short HEAD) -f docker/drift_monitor/Dockerfile.ci .  
     #- name: Push Docker Images to Artifact Registry (Opcional - para CD)
