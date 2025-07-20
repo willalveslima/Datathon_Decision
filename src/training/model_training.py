@@ -580,7 +580,7 @@ def save_model_and_preprocessors(
     tfidf_vectorizer_job,
     existing_categorical_cols,
     encoded_features,
-    models_dir="../../models/",
+    models_dir="models/",
     model_version: str = "1.0",
 ):
     """
@@ -660,8 +660,8 @@ def print_recommendation_guide():
 # pylint: disable=too-many-arguments
 # pylint: disable=too-many-positional-arguments
 def train_complete_model(
-    data_path="../../data/processed/merged_data_processed.csv",
-    models_dir="../../models/",
+    data_path="data/processed/merged_data_processed.csv",
+    models_dir="models/",
     max_features=5000,
     test_size=0.2,
     threshold=0.7,

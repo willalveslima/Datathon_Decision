@@ -36,14 +36,14 @@ import pandas as pd
 
 # --- Caminhos dos arquivos ---
 # Ajustado para que o script possa ser executado a partir de src/training/
-RAW_DATA_PASTA = "../../data/raw/"
+RAW_DATA_PASTA = "data/raw/"
 APPLICANTS_FILE = RAW_DATA_PASTA + "applicants.json"
 VAGAS_FILE = RAW_DATA_PASTA + "vagas.json"
 PROSPECTS_FILE = RAW_DATA_PASTA + "prospects.json"
 
 # --- Caminhos do arquivo resultante ---
 # Ajustado para que o script possa ser executado a partir de src/training/
-PROCESSED_DATA_PASTA = "../../data/processed/"
+PROCESSED_DATA_PASTA = "data/processed/"
 MERGED_DATA_PROCESSED_FILE = PROCESSED_DATA_PASTA + "merged_data_processed.csv"
 
 
