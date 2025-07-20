@@ -55,6 +55,7 @@ jobs:
         gsutil cp gs://datathon-decision/raw/vagas.json data/raw/vagas.json
         gsutil cp gs://datathon-decision/raw/prospects.json data/raw/prospects.json
         echo "Raw data downloaded."
+        
 
     - name: Run Data Preprocessing
       # Executa o script de pré-processamento para gerar o merged_data_processed.csv
