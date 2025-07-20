@@ -28,6 +28,11 @@ RUN mkdir -p /app/models
 COPY gcp-key.json /tmp/gcp-key.json
 COPY gcp-id.txt /tmp/gcp-id.txt
 
+# DEBUGGING STEP: Print the content of gcp-key.json to the build log.
+# This will help you verify if the JSON is correctly formatted.
+# IMPORTANT: REMOVE THIS LINE AFTER DEBUGGING FOR SECURITY REASONS!
+RUN echo "Content of gcp-key.json:" && cat /tmp/gcp-key.json
+
 # Autentique o gcloud CLI usando a chave da conta de serviço
 # e defina o ID do projeto.
 # Use --activate-gservice-account para ativar a conta de serviço.
@@ -35,7 +40,7 @@ COPY gcp-id.txt /tmp/gcp-id.txt
 RUN export GCP_PROJECT_ID=$(cat /tmp/gcp-id.txt) && \
     gcloud auth activate-service-account --key-file=/tmp/gcp-key.json --project=$GCP_PROJECT_ID && \
     gcloud config set project $GCP_PROJECT_ID
-    
+
 RUN gsutil cp gs://datathon-decision/models/logistic_regression_model.pkl /app/models/
 RUN gsutil cp gs://datathon-decision/models/tfidf_vectorizer_applicant.pkl /app/models/
 RUN gsutil cp gs://datathon-decision/models/tfidf_vectorizer_job.pkl /app/models/
@@ -51,5 +56,10 @@ COPY src/ ./src/
 # Expõe a porta em que a aplicação FastAPI será executada.
 EXPOSE 8000
 
+# Limpe o ficheiro da chave da conta de serviço para segurança.
+# É crucial remover as credenciais sensíveis da imagem final.
+RUN rm /tmp/gcp-key.json && \
+    rm /tmp/gcp-id.txt
 # Comando para iniciar a aplicação usando Uvicorn.
+
 CMD ["uvicorn", "src.prediction_service.prediction_service:app", "--host", "0.0.0.0", "--port", "8000"]
