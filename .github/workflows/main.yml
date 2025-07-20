@@ -63,9 +63,9 @@ jobs:
           echo "Downloading raw data from GCS bucket: datathon-decision..."
           mkdir -p data/raw # Garante que a pasta de destino exista
           # Adapte os nomes dos arquivos se forem diferentes no seu bucket
-          gsutil cp gs://datathon-decision/raw/applicants.json data/raw/applicants.json
-          gsutil cp gs://datathon-decision/raw/vagas.json data/raw/vagas.json
-          gsutil cp gs://datathon-decision/raw/prospects.json data/raw/prospects.json
+          gsutil cp gs://datathon-decision/data/raw/applicants.json data/raw/applicants.json
+          gsutil cp gs://datathon-decision/data/raw/vagas.json data/raw/vagas.json
+          gsutil cp gs://datathon-decision/data/raw/prospects.json data/raw/prospects.json
           echo "Raw data downloaded."
 
       - name: Run Data Preprocessing
