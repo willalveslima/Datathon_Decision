@@ -28,6 +28,13 @@ jobs:
           # A chave JSON da sua Service Account da GCP, armazenada como um GitHub Secret
           # Ex: GCP_SA_KEY
           credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+
+      - name: Use gcloud
+        run: gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
+        
       - name: Verify GCP Authentication (DEBUG)
         run: |
           gcloud auth list
