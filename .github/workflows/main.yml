@@ -103,10 +103,10 @@ jobs:
         run: |
           
           echo "Building API Docker image..."
-          docker build -t recommendation-api:$(git rev-parse --short HEAD) -f docker/api/Dockerfile.ci .
+          docker build -t recommendation-api:$(git rev-parse --short HEAD) -f docker/api/Dockerfile .
           
           echo "Building Drift Monitor Docker image..."
-          docker build -t drift-monitor:$(git rev-parse --short HEAD) -f docker/drift_monitor/Dockerfile.ci . 
+          docker build -t drift-monitor:$(git rev-parse --short HEAD) -f docker/drift_monitor/Dockerfile . 
            
       - name: Setup gcloud and Authenticate Docker with Artifact Registry
         uses: 'google-github-actions/setup-gcloud@v2'
