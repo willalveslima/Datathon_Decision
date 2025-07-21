@@ -146,7 +146,7 @@ jobs:
         uses: 'google-github-actions/deploy-cloudrun@v2'
         with:
           service: prediction-api-service # Nome do serviço Cloud Run
-          image: southamerica-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/fiap-datathon/recommendation-api:${{ steps.set_image_tag.outputs.IMAGE_TAG }} --port 8000
+          image: southamerica-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/fiap-datathon/recommendation-api:${{ steps.set_image_tag.outputs.IMAGE_TAG }}
           region: southamerica-east1 # Sua região do Cloud Run
           # Passa as variáveis de ambiente do DB para o serviço Cloud Run
           env_vars: |
