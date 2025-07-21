@@ -142,36 +142,25 @@ jobs:
 
 
 
-      - name: Deploy Prediction API to Cloud Run # NOVO PASSO: Implanta a API de Predição no Cloud Run
-        uses: 'google-github-actions/deploy-cloudrun@v2'
-        with:
-          service: prediction-api-service # Nome do serviço Cloud Run
-          image: southamerica-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/fiap-datathon/recommendation-api:${{ steps.set_image_tag.outputs.IMAGE_TAG }}
-          region: southamerica-east1 # Sua região do Cloud Run
-          # Passa as variáveis de ambiente do DB para o serviço Cloud Run
-          env_vars: |
-            DB_NAME=${{ secrets.DB_NAME_SECRET }}
-            DB_USER=${{ secrets.DB_USER_SECRET }}
-            DB_PASSWORD=${{ secrets.DB_PASSWORD_SECRET }}
-            DB_HOST=/cloudsql/${{ steps.get_cloudsql_conn_name.outputs.cloud_sql_connection_name }}
-            DB_PORT=5432
-          # Configura a Service Account para o Cloud Run (deve ter permissão de Cloud SQL Client)
-          service_account_email: cloud-run-sa-${{ secrets.GCP_PROJECT_ID }}@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com
-          # Permite acesso não autenticado para teste (REMOVA EM PRODUÇÃO)
-          allow_unauthenticated: true
+      - name: Deploy Prediction API to Cloud Run (using gcloud run deploy directly)
+        run: |-
+          gcloud run deploy prediction-api-service \
+            --image southamerica-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/fiap-datathon/recommendation-api:${{ steps.set_image_tag.outputs.IMAGE_TAG }} \
+            --platform managed \
+            --region southamerica-east1 \
+            --port 8000 \
+            --allow-unauthenticated \
+            --set-env-vars DB_NAME=${{ secrets.DB_NAME_SECRET }},DB_USER=${{ secrets.DB_USER_SECRET }},DB_PASSWORD=${{ secrets.DB_PASSWORD_SECRET }},DB_HOST=/cloudsql/${{ steps.get_cloudsql_conn_name.outputs.cloud_sql_connection_name }} \
+            --add-cloudsql-instances=${{ steps.get_cloudsql_conn_name.outputs.cloud_sql_connection_name }}
 
-      - name: Deploy Drift Monitor Service to Cloud Run # NOVO PASSO: Implanta o Serviço de Drift no Cloud Run
-        uses: 'google-github-actions/deploy-cloudrun@v2'
-        with:
-          service: drift-monitor-service # Nome do serviço Cloud Run
-          image: southamerica-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/fiap-datathon/drift-monitor:${{ steps.set_image_tag.outputs.IMAGE_TAG }}
-          region: southamerica-east1 # Sua região do Cloud Run
-          # Passa as variáveis de ambiente do DB para o serviço Cloud Run
-          env_vars: |
-            DB_NAME=${{ secrets.DB_NAME_SECRET }}
-            DB_USER=${{ secrets.DB_USER_SECRET }}
-            DB_PASSWORD=${{ secrets.DB_PASSWORD_SECRET }}
-            DB_HOST=/cloudsql/${{ steps.get_cloudsql_conn_name.outputs.cloud_sql_connection_name }} 
-            DB_PORT=5432
-          service_account_email: cloud-run-sa-${{ secrets.GCP_PROJECT_ID }}@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com
-          allow_unauthenticated: true # Permite acesso não autenticado para teste (REMOVA EM PRODUÇÃO)
+
+      - name: Deploy drift-monitor-service to Cloud Run (using gcloud run deploy directly)
+        run: |-
+          gcloud run deploy drift-monitor-service \
+            --image southamerica-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/fiap-datathon/recommendation-api:${{ steps.set_image_tag.outputs.IMAGE_TAG }} \
+            --platform managed \
+            --region southamerica-east1 \
+            --port 8000 \
+            --allow-unauthenticated \
+            --set-env-vars DB_NAME=${{ secrets.DB_NAME_SECRET }},DB_USER=${{ secrets.DB_USER_SECRET }},DB_PASSWORD=${{ secrets.DB_PASSWORD_SECRET }},DB_HOST=/cloudsql/${{ steps.get_cloudsql_conn_name.outputs.cloud_sql_connection_name }} \
+            --add-cloudsql-instances=${{ steps.get_cloudsql_conn_name.outputs.cloud_sql_connection_name }}
