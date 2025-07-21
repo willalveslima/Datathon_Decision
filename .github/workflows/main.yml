@@ -94,6 +94,11 @@ jobs:
           PYTHONPATH=. pytest --cov=src --cov-fail-under=80
       
       
+      - name: Set Image Tag # NOVO PASSO: Captura o SHA do commit em uma variável de ambiente
+        id: set_image_tag
+        run: |
+          # Obtém o SHA curto do commit e o define como uma saída da etapa
+          echo "IMAGE_TAG=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Build Docker Images
         # Constrói as imagens Docker para a API e o serviço de drift.
@@ -103,10 +108,10 @@ jobs:
         run: |
           
           echo "Building API Docker image..."
-          docker build -t recommendation-api:$(git rev-parse --short HEAD) -f docker/api/Dockerfile .
+          docker build -t recommendation-api:${{ steps.set_image_tag.outputs.IMAGE_TAG }} -f docker/api/Dockerfile .
           
           echo "Building Drift Monitor Docker image..."
-          docker build -t drift-monitor:$(git rev-parse --short HEAD) -f docker/drift_monitor/Dockerfile . 
+          docker build -t drift-monitor:${{ steps.set_image_tag.outputs.IMAGE_TAG }} -f docker/drift_monitor/Dockerfile . 
 
       - name: Push Docker Images to Artifact Registry # NOVO PASSO: Envia as imagens para o Artifact Registry da GCP
         # Requer que a Service Account usada na autenticação tenha permissão de Artifact Registry Writer
@@ -115,14 +120,14 @@ jobs:
           gcloud auth configure-docker southamerica-east1-docker.pkg.dev
           
           # Define a tag completa da imagem para o Artifact Registry
-          API_IMAGE_TAG=southamerica-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/fiap-datathon/recommendation-api:$(git rev-parse --short HEAD)
-          DRIFT_IMAGE_TAG=southamerica-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/fiap-datathon/drift-monitor:$(git rev-parse --short HEAD)
+          API_IMAGE_TAG=southamerica-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/fiap-datathon/recommendation-api:${{ steps.set_image_tag.outputs.IMAGE_TAG }}
+          DRIFT_IMAGE_TAG=southamerica-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/fiap-datathon/drift-monitor:${{ steps.set_image_tag.outputs.IMAGE_TAG }}
           
           # Tagueia e envia as imagens
-          docker tag recommendation-api:$(git rev-parse --short HEAD) $API_IMAGE_TAG
+          docker tag recommendation-api:${{ steps.set_image_tag.outputs.IMAGE_TAG }} $API_IMAGE_TAG
           docker push $API_IMAGE_TAG
           
-          docker tag drift-monitor:$(git rev-parse --short HEAD) $DRIFT_IMAGE_TAG
+          docker tag drift-monitor:${{ steps.set_image_tag.outputs.IMAGE_TAG }} $DRIFT_IMAGE_TAG
           docker push $DRIFT_IMAGE_TAG
           
           echo "Docker images pushed to Artifact Registry."
@@ -137,12 +142,13 @@ jobs:
         env:
           GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }} # Use o secret para o ID do projeto
 
+
+
       - name: Deploy Prediction API to Cloud Run # NOVO PASSO: Implanta a API de Predição no Cloud Run
         uses: 'google-github-actions/deploy-cloudrun@v2'
         with:
           service: prediction-api-service # Nome do serviço Cloud Run
-          image: southamerica-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/fiap-datathon/recommendation-api:$(git rev-parse --short HEAD)
-          region: southamerica-east1 # Sua região do Cloud Run
+          image: southamerica-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/fiap-datathon/recommendation-api:${{ steps.set_image_tag.outputs.IMAGE_TAG }}
           # Passa as variáveis de ambiente do DB para o serviço Cloud Run
           env_vars: |
             DB_NAME=${{ secrets.DB_NAME_SECRET }}
@@ -159,7 +165,7 @@ jobs:
         uses: 'google-github-actions/deploy-cloudrun@v2'
         with:
           service: drift-monitor-service # Nome do serviço Cloud Run
-          image: southamerica-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/fiap-datathon/drift-monitor:$(git rev-parse --short HEAD)
+          image: southamerica-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/fiap-datathon/drift-monitor:${{ steps.set_image_tag.outputs.IMAGE_TAG }}
           region: southamerica-east1 # Sua região do Cloud Run
           # Passa as variáveis de ambiente do DB para o serviço Cloud Run
           env_vars: |
