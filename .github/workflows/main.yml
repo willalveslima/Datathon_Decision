@@ -141,7 +141,7 @@ jobs:
         uses: 'google-github-actions/deploy-cloudrun@v2'
         with:
           service: prediction-api-service # Nome do serviço Cloud Run
-          image: southamerica-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/ml-reco-repo/recommendation-api:$(git rev-parse --short HEAD)
+          image: southamerica-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/fiap-datathon/recommendation-api:$(git rev-parse --short HEAD)
           region: southamerica-east1 # Sua região do Cloud Run
           # Passa as variáveis de ambiente do DB para o serviço Cloud Run
           env_vars: |
@@ -159,7 +159,7 @@ jobs:
         uses: 'google-github-actions/deploy-cloudrun@v2'
         with:
           service: drift-monitor-service # Nome do serviço Cloud Run
-          image: southamerica-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/ml-reco-repo/drift-monitor:$(git rev-parse --short HEAD)
+          image: southamerica-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/fiap-datathon/drift-monitor:$(git rev-parse --short HEAD)
           region: southamerica-east1 # Sua região do Cloud Run
           # Passa as variáveis de ambiente do DB para o serviço Cloud Run
           env_vars: |
