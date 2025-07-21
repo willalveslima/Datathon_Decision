@@ -153,7 +153,7 @@ jobs:
             DB_NAME=${{ secrets.DB_NAME_SECRET }}
             DB_USER=${{ secrets.DB_USER_SECRET }}
             DB_PASSWORD=${{ secrets.DB_PASSWORD_SECRET }}
-            DB_HOST=/cloudsql/${{ steps.get_cloudsql_conn_name.outputs.cloud_sql_connection_name }} # Conexão via Cloud SQL Proxy
+            DB_HOST=/cloudsql/${{ steps.get_cloudsql_conn_name.outputs.cloud_sql_connection_name }}
             DB_PORT=5432
           # Configura a Service Account para o Cloud Run (deve ter permissão de Cloud SQL Client)
           #service_account_email: cloud-run-sa-${{ secrets.GCP_PROJECT_ID }}@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com
@@ -171,7 +171,7 @@ jobs:
             DB_NAME=${{ secrets.DB_NAME_SECRET }}
             DB_USER=${{ secrets.DB_USER_SECRET }}
             DB_PASSWORD=${{ secrets.DB_PASSWORD_SECRET }}
-            DB_HOST=/cloudsql/${{ steps.get_cloudsql_conn_name.outputs.cloud_sql_connection_name }} # Conexão via Cloud SQL Proxy
+            DB_HOST=/cloudsql/${{ steps.get_cloudsql_conn_name.outputs.cloud_sql_connection_name }} 
             DB_PORT=5432
           #service_account_email: cloud-run-sa-${{ secrets.GCP_PROJECT_ID }}@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com
           allow_unauthenticated: true # Permite acesso não autenticado para teste (REMOVA EM PRODUÇÃO)
