@@ -108,10 +108,10 @@ jobs:
         run: |
           
           echo "Building API Docker image..."
-          docker build -t recommendation-api:${{ steps.set_image_tag.outputs.IMAGE_TAG }} -f docker/api/Dockerfile .
+          docker build -t recommendation-api:${{ steps.set_image_tag.outputs.IMAGE_TAG }} -f docker/api/Dockerfile.ci .
           
           echo "Building Drift Monitor Docker image..."
-          docker build -t drift-monitor:${{ steps.set_image_tag.outputs.IMAGE_TAG }} -f docker/drift_monitor/Dockerfile . 
+          docker build -t drift-monitor:${{ steps.set_image_tag.outputs.IMAGE_TAG }} -f docker/drift_monitor/Dockerfile.ci . 
 
       - name: Push Docker Images to Artifact Registry # NOVO PASSO: Envia as imagens para o Artifact Registry da GCP
         # Requer que a Service Account usada na autenticação tenha permissão de Artifact Registry Writer
