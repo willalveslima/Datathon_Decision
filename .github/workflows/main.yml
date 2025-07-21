@@ -157,7 +157,7 @@ jobs:
       - name: Deploy drift-monitor-service to Cloud Run (using gcloud run deploy directly)
         run: |-
           gcloud run deploy drift-monitor-service \
-            --image southamerica-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/fiap-datathon/recommendation-api:${{ steps.set_image_tag.outputs.IMAGE_TAG }} \
+            --image southamerica-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/fiap-datathon/drift-monitor:${{ steps.set_image_tag.outputs.IMAGE_TAG }} \
             --platform managed \
             --region southamerica-east1 \
             --port 8001 \
