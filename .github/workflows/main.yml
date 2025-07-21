@@ -107,32 +107,66 @@ jobs:
           
           echo "Building Drift Monitor Docker image..."
           docker build -t drift-monitor:$(git rev-parse --short HEAD) -f docker/drift_monitor/Dockerfile . 
-           
-      - name: Setup gcloud and Authenticate Docker with Artifact Registry
-        uses: 'google-github-actions/setup-gcloud@v2'
-        with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
-          export_default_credentials: true
-      
-      - name: Push Docker Images to Artifact Registry (Optional - for CD)
-        # This step would send the images to GCP Artifact Registry.
-        # Requires permission configuration on the Service Account and Docker login.
+
+      - name: Push Docker Images to Artifact Registry # NOVO PASSO: Envia as imagens para o Artifact Registry da GCP
+        # Requer que a Service Account usada na autenticação tenha permissão de Artifact Registry Writer
         run: |
-          gcloud auth configure-docker # Authenticates Docker with Artifact Registry
-          docker tag recommendation-api:$(git rev-parse --short HEAD) gcr.io/${{ secrets.GCP_PROJECT_ID }}/recommendation-api:$(git rev-parse --short HEAD)
-          docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/recommendation-api:$(git rev-parse --short HEAD)
-    
-    # - name: Deploy to Cloud Run (Opcional - para CD)
-    #   # Esta etapa seria para implantar os serviços no Cloud Run.
-    #   # Requer permissões no Service Account para Cloud Run Admin.
-    #   # uses: 'google-github-actions/deploy-cloudrun@v2'
-    #   # with:
-    #   #   service: recommendation-api-service
-    #   #   image: gcr.io/your-gcp-project-id/recommendation-api:$(git rev-parse --short HEAD)
-    #   #   region: us-east1 # Sua região do Cloud Run
-    #   #   # Adicione variáveis de ambiente do Cloud Run aqui, se necessário
-    #   #   env_vars: |
-    #   #     DB_HOST=your-cloudsql-ip
-    #   #     DB_USER=your-db-user
-    #   #     DB_PASSWORD=your-db-password
+          # Configura o Docker para usar o Artifact Registry
+          gcloud auth configure-docker southamerica-east1-docker.pkg.dev
+          
+          # Define a tag completa da imagem para o Artifact Registry
+          API_IMAGE_TAG=southamerica-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/fiap-datathon/recommendation-api:$(git rev-parse --short HEAD)
+          DRIFT_IMAGE_TAG=southamerica-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/fiap-datathon/drift-monitor:$(git rev-parse --short HEAD)
+          
+          # Tagueia e envia as imagens
+          docker tag recommendation-api:$(git rev-parse --short HEAD) $API_IMAGE_TAG
+          docker push $API_IMAGE_TAG
+          
+          docker tag drift-monitor:$(git rev-parse --short HEAD) $DRIFT_IMAGE_TAG
+          docker push $DRIFT_IMAGE_TAG
+          
+          echo "Docker images pushed to Artifact Registry."
+
+      - name: Get Cloud SQL Connection Name # NOVO PASSO: Obtém o nome de conexão do Cloud SQL
+        id: get_cloudsql_conn_name
+        run: |
+          # Substitua <sua-instancia-cloudsql> pelo nome da sua instância Cloud SQL
+          # Ex: ml-reco-db-fiap-datathon-decision-466317
+          SQL_CONN_NAME=$(gcloud sql instances describe ml-reco-db-fiap-datathon-decision --format='value(connectionName)')
+          echo "cloud_sql_connection_name=$SQL_CONN_NAME" >> $GITHUB_OUTPUT
+        env:
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }} # Use o secret para o ID do projeto
+
+      - name: Deploy Prediction API to Cloud Run # NOVO PASSO: Implanta a API de Predição no Cloud Run
+        uses: 'google-github-actions/deploy-cloudrun@v2'
+        with:
+          service: prediction-api-service # Nome do serviço Cloud Run
+          image: southamerica-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/ml-reco-repo/recommendation-api:$(git rev-parse --short HEAD)
+          region: southamerica-east1 # Sua região do Cloud Run
+          # Passa as variáveis de ambiente do DB para o serviço Cloud Run
+          env_vars: |
+            DB_NAME=${{ secrets.DB_NAME_SECRET }}
+            DB_USER=${{ secrets.DB_USER_SECRET }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD_SECRET }}
+            DB_HOST=/cloudsql/${{ steps.get_cloudsql_conn_name.outputs.cloud_sql_connection_name }} # Conexão via Cloud SQL Proxy
+            DB_PORT=5432
+          # Configura a Service Account para o Cloud Run (deve ter permissão de Cloud SQL Client)
+          service_account_email: cloud-run-sa-${{ secrets.GCP_PROJECT_ID }}@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com
+          # Permite acesso não autenticado para teste (REMOVA EM PRODUÇÃO)
+          allow_unauthenticated: true
+
+      - name: Deploy Drift Monitor Service to Cloud Run # NOVO PASSO: Implanta o Serviço de Drift no Cloud Run
+        uses: 'google-github-actions/deploy-cloudrun@v2'
+        with:
+          service: drift-monitor-service # Nome do serviço Cloud Run
+          image: southamerica-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/ml-reco-repo/drift-monitor:$(git rev-parse --short HEAD)
+          region: southamerica-east1 # Sua região do Cloud Run
+          # Passa as variáveis de ambiente do DB para o serviço Cloud Run
+          env_vars: |
+            DB_NAME=${{ secrets.DB_NAME_SECRET }}
+            DB_USER=${{ secrets.DB_USER_SECRET }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD_SECRET }}
+            DB_HOST=/cloudsql/${{ steps.get_cloudsql_conn_name.outputs.cloud_sql_connection_name }} # Conexão via Cloud SQL Proxy
+            DB_PORT=5432
+          service_account_email: cloud-run-sa-${{ secrets.GCP_PROJECT_ID }}@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com
+          allow_unauthenticated: true # Permite acesso não autenticado para teste (REMOVA EM PRODUÇÃO)
