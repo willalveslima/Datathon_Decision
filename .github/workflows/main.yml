@@ -137,14 +137,11 @@ jobs:
         env:
           GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }} # Use o secret para o ID do projeto
 
-      - name: Set short SHA
-        run: echo "SHORT_SHA=$(git rev-parse --short ${{ github.sha }})" >> $GITHUB_ENV
-
       - name: Deploy Prediction API to Cloud Run # NOVO PASSO: Implanta a API de Predição no Cloud Run
         uses: 'google-github-actions/deploy-cloudrun@v2'
         with:
           service: prediction-api-service # Nome do serviço Cloud Run
-          image: southamerica-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/fiap-datathon/recommendation-api:${{SHORT_SHA}}
+          image: southamerica-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/fiap-datathon/recommendation-api:$(git rev-parse --short HEAD)
           region: southamerica-east1 # Sua região do Cloud Run
           # Passa as variáveis de ambiente do DB para o serviço Cloud Run
           env_vars: |
@@ -162,7 +159,7 @@ jobs:
         uses: 'google-github-actions/deploy-cloudrun@v2'
         with:
           service: drift-monitor-service # Nome do serviço Cloud Run
-          image: southamerica-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/fiap-datathon/drift-monitor:${{SHORT_SHA}}
+          image: southamerica-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/fiap-datathon/drift-monitor:$(git rev-parse --short HEAD)
           region: southamerica-east1 # Sua região do Cloud Run
           # Passa as variáveis de ambiente do DB para o serviço Cloud Run
           env_vars: |
