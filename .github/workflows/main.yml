@@ -148,7 +148,6 @@ jobs:
             --image southamerica-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/fiap-datathon/recommendation-api:${{ steps.set_image_tag.outputs.IMAGE_TAG }} \
             --platform managed \
             --region southamerica-east1 \
-            --port 8000 \
             --allow-unauthenticated \
             --set-env-vars DB_NAME=${{ secrets.DB_NAME_SECRET }},DB_USER=${{ secrets.DB_USER_SECRET }},DB_PASSWORD=${{ secrets.DB_PASSWORD_SECRET }},DB_HOST=/cloudsql/${{ steps.get_cloudsql_conn_name.outputs.cloud_sql_connection_name }} \
             --add-cloudsql-instances=${{ steps.get_cloudsql_conn_name.outputs.cloud_sql_connection_name }}
@@ -160,7 +159,6 @@ jobs:
             --image southamerica-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/fiap-datathon/recommendation-api:${{ steps.set_image_tag.outputs.IMAGE_TAG }} \
             --platform managed \
             --region southamerica-east1 \
-            --port 8000 \
             --allow-unauthenticated \
             --set-env-vars DB_NAME=${{ secrets.DB_NAME_SECRET }},DB_USER=${{ secrets.DB_USER_SECRET }},DB_PASSWORD=${{ secrets.DB_PASSWORD_SECRET }},DB_HOST=/cloudsql/${{ steps.get_cloudsql_conn_name.outputs.cloud_sql_connection_name }} \
             --add-cloudsql-instances=${{ steps.get_cloudsql_conn_name.outputs.cloud_sql_connection_name }}
