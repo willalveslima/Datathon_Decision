@@ -157,9 +157,9 @@ jobs:
             DB_HOST=/cloudsql/${{ steps.get_cloudsql_conn_name.outputs.cloud_sql_connection_name }} # Conexão via Cloud SQL Proxy
             DB_PORT=5432
           # Configura a Service Account para o Cloud Run (deve ter permissão de Cloud SQL Client)
-          service_account_email: cloud-run-sa-${{ secrets.GCP_PROJECT_ID }}@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com
+          #service_account_email: cloud-run-sa-${{ secrets.GCP_PROJECT_ID }}@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com
           # Permite acesso não autenticado para teste (REMOVA EM PRODUÇÃO)
-          allow_unauthenticated: true
+          #allow_unauthenticated: true
 
       - name: Deploy Drift Monitor Service to Cloud Run # NOVO PASSO: Implanta o Serviço de Drift no Cloud Run
         uses: 'google-github-actions/deploy-cloudrun@v2'
@@ -174,5 +174,5 @@ jobs:
             DB_PASSWORD=${{ secrets.DB_PASSWORD_SECRET }}
             DB_HOST=/cloudsql/${{ steps.get_cloudsql_conn_name.outputs.cloud_sql_connection_name }} # Conexão via Cloud SQL Proxy
             DB_PORT=5432
-          service_account_email: cloud-run-sa-${{ secrets.GCP_PROJECT_ID }}@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com
-          allow_unauthenticated: true # Permite acesso não autenticado para teste (REMOVA EM PRODUÇÃO)
+          #service_account_email: cloud-run-sa-${{ secrets.GCP_PROJECT_ID }}@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com
+          #allow_unauthenticated: true # Permite acesso não autenticado para teste (REMOVA EM PRODUÇÃO)
