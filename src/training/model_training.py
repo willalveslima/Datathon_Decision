@@ -13,7 +13,7 @@ from sklearn.linear_model import LogisticRegression  # Importar LogisticRegressi
 from sklearn.metrics import auc, classification_report, precision_recall_curve, roc_auc_score
 from sklearn.model_selection import train_test_split
 
-MODEL_VERSION = "1.0"  # Versão do modelo, pode ser alterada conforme necessário
+MODEL_VERSION = "2.0"  # Versão do modelo, pode ser alterada conforme necessário
 
 
 def load_processed_data(data_path="data/processed/merged_data_processed.csv"):
